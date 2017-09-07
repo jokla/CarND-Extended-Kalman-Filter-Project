@@ -46,7 +46,12 @@ FusionEKF::FusionEKF() {
  //set the process covariance matrix Q
   ekf_.Q_ = MatrixXd(4, 4);
   
- //set the acceleration noise components noise_ax = 5; noise_ay = 5;
+ //state covariance matrix P
+  kf_.P_ = MatrixXd(4, 4);
+  kf_.P_ << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1000, 0,
+            0, 0, 0, 1000;
 
 }
 
@@ -133,11 +138,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Use the sensor type to perform the update step.
      * Update the state and covariance matrices.
    */
-
+  VectorXd z = VectorXd(3);
+  z << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], measurement_pack.raw_measurements_[2];
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-    // Radar updates
+      // Radar updates
+      ekf_.Update(z);
   } else {
-    // Laser updates
+    // Laser updates  
+    ekf_.UpdateEKF(z);
   }
 
   // print the output
