@@ -150,7 +150,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.Update(z);
   } else {
     // Laser updates
-      ekf_.H_ = H_radar_;
+      ekf_.H_ = Tools::CalculateJacobian(ekf.x_);
       ekf_R_= R_radar_;
       ekf_.UpdateEKF(z);
   }
