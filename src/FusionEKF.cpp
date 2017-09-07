@@ -49,16 +49,13 @@ FusionEKF::FusionEKF() {
  //state covariance matrix P
   ekf_.P_ = MatrixXd(4, 4);
   ekf_.P_ << 1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1000, 0,
-            0, 0, 0, 1000;
-  
-  
+             0, 1, 0, 0,
+             0, 0, 1000, 0,
+             0, 0, 0, 1000;
   
  //measurement matrix
-  ekf_.H_ = MatrixXd(2, 4);
-  ekf_.H_ << 1, 0, 0, 0,
-             0, 1, 0, 0;
+  ekf_.H_laser_ << 1, 0, 0, 0,
+                   0, 1, 0, 0;
 }
 
 /**
@@ -132,7 +129,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
               0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay, 
               dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
               0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
-
+  
   ekf_.Predict();
 
   /*****************************************************************************
@@ -148,10 +145,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   z << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], measurement_pack.raw_measurements_[2];
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // Radar updates
+      ekf_.H_ = H_laser_;
+      ekf_R_= R_laser_;
       ekf_.Update(z);
   } else {
-    // Laser updates  
-    ekf_.UpdateEKF(z);
+    // Laser updates
+      ekf_.H_ = H_radar_;
+      ekf_R_= R_radar_;
+      ekf_.UpdateEKF(z);
   }
 
   // print the output
