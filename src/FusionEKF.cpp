@@ -47,12 +47,18 @@ FusionEKF::FusionEKF() {
   ekf_.Q_ = MatrixXd(4, 4);
   
  //state covariance matrix P
-  kf_.P_ = MatrixXd(4, 4);
-  kf_.P_ << 1, 0, 0, 0,
+  ekf_.P_ = MatrixXd(4, 4);
+  ekf_.P_ << 1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1000, 0,
             0, 0, 0, 1000;
-
+  
+  
+  
+ //measurement matrix
+  ekf_.H_ = MatrixXd(2, 4);
+  ekf_.H_ << 1, 0, 0, 0,
+             0, 1, 0, 0;
 }
 
 /**
