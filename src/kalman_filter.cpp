@@ -28,14 +28,14 @@ void KalmanFilter::Predict() {
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
-  VectorXd z_pred = H_ * x_; 
+  VectorXd z_pred = H_ * x_; 
   VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
- //new estimate
+ //new estimate
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
@@ -43,35 +43,35 @@ void KalmanFilter::Update(const VectorXd &z) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  
+    if(fabs(x_[0]) < 0.0001){
+         x_[0] = 0.0001;
+     }
   double rho = sqrt(x_[0] * x_[0] + x_[1] * x_[1]);
   double theta = atan2(x_[1], x_[0]);
-  double rho_dot = (x_[0] * x_[2] + x_[1] * x_[3])/rho);
+  double rho_dot = 0.0;
+  if (fabs(rho) < 0.0001) {
+        rho = 0.0001;
+    }
+  else {
+    rho_dot = (x_[0] * x_[2] + x_[1] * x_[3])/rho;
+  }
 
   VectorXd h = VectorXd(3);
   h << rho, theta, rho_dot;
 
   VectorXd y = z - h;
 
-  const double pi = 3.14159; 
-  // adjusting the angle so that its always within desired range.
-  if(y[1] >= pi){
-       while(y[1] > pi){
-         y[1] -= 2*pi;
-       }
-  }else if(y[1] <=- pi){
-      while(y[1] <=- pi){
-          y[1] += 2*pi;
-      }
-  }
- 
-  
+  if(fabs(y(1)) > M_PI ){
+       y(1) -= round(y(1) / (2.0 * M_PI)) * (2.0 * M_PI);
+   }
+
+   
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
-  //new estimate  
+  //new estimate  
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
